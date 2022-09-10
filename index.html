@@ -1,0 +1,101 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8">
+  <title></title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="">
+  <meta property="og:type" content="">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <!-- Place favicon.ico in the root directory -->
+
+  <link rel="stylesheet" type="text/css" href="css/normalize.css">
+  <link rel="stylesheet" type="text/css" href="css/main.css">
+
+  <meta name="theme-color" content="#fafafa">
+</head>
+
+<body>
+
+  <!-- Add your site or application content here -->
+
+
+  <!-- <p id="demo"></p> -->
+<div id="box">
+  <div id="loading"></div>
+  <br>
+  <br>
+  <br>
+  <button id="getbillbutton" onclick="getBill();">📜 Get a Bill from Congress 📜</button>
+  <p id="summary"></p>
+</div>
+
+<footer>
+
+   <p><a href="https://github.com/airbr">Just me 2022</a> just experimenting with <a href="https://api.congress.gov/">https://api.congress.gov/</a></p>
+
+</footer>
+
+
+
+  <script>
+
+    // selecting loading div
+    const loader = document.querySelector("#loading");
+    const summary = document.getElementById("summary");
+    const button = document.getElementById("getbillbutton");
+
+    // showing loading
+    function displayLoading() {
+        loader.classList.add("displayloading");
+        // to stop loading after some time
+        setTimeout(() => {
+              loader.classList.remove("displayloading");
+        }, 5000);
+    }
+
+    // hiding loading 
+    function hideLoading() {
+        loader.classList.remove("displayloading");
+    }
+
+  function getBill(){
+    displayLoading();
+
+    fetch('/bill')
+      .then((response) => response.json())
+      .then((data) => {
+        // document.getElementById("demo").innerHTML = data.bills[0].title;
+        let congress = data.bills[0].congress;
+        let type =  data.bills[0].type;
+        let number = data.bills[0].number;
+        fetch('/summary/'+ congress + '/'+ type.toLowerCase() + '/'+ number + '/')
+          .then((response) => response.json())
+          .then((summary) => {
+           document.getElementById("summary").innerHTML = summary.summaries[0].text;
+           hideLoading();
+           button.classList.add("hidden");
+      });
+
+      });    
+    }
+  </script>
+
+  <script src="js/vendor/modernizr-3.11.2.min.js"></script>
+
+  <!-- Google Analytics: change UA-XXXXX-Y to be your site's ID. -->
+  <!-- <script>
+    window.ga = function () { ga.q.push(arguments) }; ga.q = []; ga.l = +new Date;
+    ga('create', 'UA-XXXXX-Y', 'auto'); ga('set', 'anonymizeIp', true); ga('set', 'transport', 'beacon'); ga('send', 'pageview')
+  </script>
+  <script src="https://www.google-analytics.com/analytics.js" async></script> -->
+</body>
+
+</html>
