@@ -24,8 +24,12 @@
   let count = 0;
   var offset = 0;
 
-async function getBill(mode){
+async function getBill(mode) {
     displayLoading();
+
+    if(count > 20){
+      return;
+    }
 
     if (count === 19) {
       offset++;
@@ -36,8 +40,6 @@ async function getBill(mode){
       const res = await fetch('/bill/' + offset + '/')
       obj = await res.json();
       count++;
-
-      console.log(obj.pagination.next);
     }
 
     if (mode === 2) {
@@ -68,18 +70,5 @@ async function getBill(mode){
     });
 
 }
-
-
-    // fetch('https://api.congress.gov/v3/bill?format=json&api_key=bIGjQxkSIlNgX00498tiancQd2mJAEgs4rSaC8DB', {
-    //     method: 'GET',
-    //     headers: {
-    //       'accept': 'application/xml',
-    //       'Access-Control-Allow-Origin': 'https://api.congress.gov/'
-    //     }
-    //   })
-    // .then(
-    //     (response) => response.json())
-    // .then((data) => console.log(data));
-
 
 
