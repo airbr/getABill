@@ -1,54 +1,73 @@
+    // selecting loading div
+    const loader = document.querySelector("#loading");
+    const summary = document.getElementById("summary");
+    const button = document.getElementById("buttoncontainer");
+    const action = document.getElementById("actiondate");
+    const text = document.getElementById("text");
+    const title = document.getElementById("titletext");
 
 
-require('dotenv').config();
+    // showing loading
+    function displayLoading() {
+        loader.classList.add("displayloading");
+        // to stop loading after some time
+        setTimeout(() => {
+              loader.classList.remove("displayloading");
+        }, 5000);
+    }
 
-const express = require('express');
-const request = require('request');
-const path = require('path');
-const port = 3000;
-const app = express();
+    // hiding loading 
+    function hideLoading() {
+        loader.classList.remove("displayloading");
+    }
 
-app.use(express.static('../'));
+  let count = 0;
+  var offset = 0;
 
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  next();
-});
+async function getBill(mode){
+    displayLoading();
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../index.html'));
-})
+    if (count === 19) {
+      offset++;
+      count = 0;
+    }
+    
+    if (count === 0) {
+      const res = await fetch('/bill/' + offset + '/')
+      obj = await res.json();
+      count++;
 
-app.get('/bill', (req, res) => {
-    request(
-        { url: 'https://api.congress.gov/v3/bill?format=json&api_key='+ process.env.KEYSTOCONGRESS },
-        (error, response, body) => {
-          if (error || response.statusCode !== 200) {
-            return res.status(500).json({ type: 'error', message: err.message });
-          }        
-          res.json(JSON.parse(body));
-        // console.log(JSON.parse(body));
-        }
-      )
-});
+      console.log(obj.pagination.next);
+    }
 
-app.get('/summary/:congress/:type/:number', (req, res) => {
-    request(
-        { url: 'https://api.congress.gov/v3/bill/'+ req.params.congress + '/'+ req.params.type + '/'+ req.params.number + '/summaries?format=json&api_key='+process.env.KEYSTOCONGRESS },
-        (error, response, body) => {
-          if (error || response.statusCode !== 200) {
-            return res.status(500).json({ type: 'error', message: err.message });
-          }        
-          res.json(JSON.parse(body));
-        // console.log(JSON.parse(body));
-        }
-    )
-});
+    if (mode === 2) {
+      count++;
+      var titletext = obj.bills[count].title;
+      var congress = obj.bills[count].congress;
+      var type =  obj.bills[count].type;
+      var number = obj.bills[count].number;
+      var latestaction = obj.bills[count].latestAction;
+    } else {
+      var titletext = obj.bills[0].title;
+      var congress = obj.bills[0].congress;
+      var type =  obj.bills[0].type;
+      var number = obj.bills[0].number;
+      var latestaction = obj.bills[0].latestAction;
+    }
+      
+    fetch('/summary/'+ congress + '/'+ type.toLowerCase() + '/'+ number + '/')
+      .then((response) => response.json())
+      .then((summarydata) => {
+        console.log(summarydata);
+        title.innerHTML = titletext;
+        text.innerHTML = 'Text: ' + latestaction.text;
+        action.innerHTML = 'Latest Action: ' + latestaction.actionDate;
+        summary.innerHTML = summarydata.summaries[0]?.text || "";
+      hideLoading();
+      button.innerHTML = '<button id="getbillbutton" onclick="getBill(2);">📜 Get another! 📜</button>';
+    });
 
-
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+}
 
 
     // fetch('https://api.congress.gov/v3/bill?format=json&api_key=bIGjQxkSIlNgX00498tiancQd2mJAEgs4rSaC8DB', {
